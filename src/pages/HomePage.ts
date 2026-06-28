@@ -1,13 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-/**
- * HomePage — covers the ParaBank public landing page.
- * Encapsulates navigation links, login form, and promotional content.
- */
 export class HomePage extends BasePage {
-  // ─── Locators ──────────────────────────────────────────────────────────────
-
   readonly loginUsernameInput: Locator;
   readonly loginPasswordInput: Locator;
   readonly loginButton: Locator;
@@ -22,21 +16,18 @@ export class HomePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-
     this.loginUsernameInput = page.locator('input[name="username"]');
     this.loginPasswordInput = page.locator('input[name="password"]');
     this.loginButton = page.locator('input[value="Log In"]');
     this.registerLink = page.locator('a[href*="register"]').first();
     this.forgotLoginLink = page.locator('a[href*="lookup"]');
-    this.aboutUsLink = page.locator('a[href*="about"]');
+    this.aboutUsLink = page.locator('#headerPanel a[href*="about"]').first();
     this.servicesLink = page.locator('#HeaderContent a[href*="services"]');
     this.adminPageLink = page.locator('a[href*="admin"]').first();
     this.errorMessage = page.locator('.error');
     this.welcomePanel = page.locator('#rightPanel');
     this.logoLink = page.locator('#logo');
   }
-
-  // ─── Actions ───────────────────────────────────────────────────────────────
 
   async navigate(): Promise<void> {
     await this.navigateTo('/parabank/index.htm');
@@ -63,8 +54,6 @@ export class HomePage extends BasePage {
     await this.clickElement(this.aboutUsLink);
     await this.waitForNavigation();
   }
-
-  // ─── Getters ───────────────────────────────────────────────────────────────
 
   async getErrorMessage(): Promise<string> {
     return this.getElementText(this.errorMessage);
