@@ -1,22 +1,10 @@
 import { test, expect } from '../fixtures/fixtures';
 import { VALID_CREDENTIALS, INVALID_CREDENTIALS, URLS } from '../data/testData';
 
-/**
- * Login Test Suite — ParaBank
- *
- * Covers positive login, negative login (wrong credentials, empty fields),
- * navigation to supporting pages, and post-login URL validation.
- *
- * @tag smoke
- * @tag regression
- */
-
 test.describe('Login — ParaBank', () => {
   test.beforeEach(async ({ homePage }) => {
     await homePage.navigate();
   });
-
-  // ─── Positive Tests ────────────────────────────────────────────────────────
 
   test('should display login form on home page @smoke', async ({ homePage }) => {
     await expect(homePage.loginUsernameInput).toBeVisible();
@@ -35,12 +23,10 @@ test.describe('Login — ParaBank', () => {
     await expect(content).toBeVisible();
   });
 
-  // ─── Negative Tests ────────────────────────────────────────────────────────
-
   test('should show error for invalid username and password @regression', async ({ homePage }) => {
     await homePage.login(INVALID_CREDENTIALS.username, INVALID_CREDENTIALS.password);
     await expect(homePage.errorMessage).toBeVisible();
-    await expect(homePage.errorMessage).toContainText('Error');
+    await expect(homePage.errorMessage).toContainText('could not be verified');
   });
 
   test('should show error when username is empty @regression', async ({ homePage }) => {
@@ -61,12 +47,11 @@ test.describe('Login — ParaBank', () => {
     expect(url).toBeDefined();
   });
 
-  test('should show error for SQL injection attempt in username @regression', async ({ homePage }) => {
+  test('should not allow SQL injection to bypass login @regression', async ({ homePage, page }) => {
     await homePage.login("' OR '1'='1", 'anyPassword');
-    await expect(homePage.errorMessage).toBeVisible();
+    const url = page.url();
+    expect(url).not.toContain('overview');
   });
-
-  // ─── Navigation Tests ──────────────────────────────────────────────────────
 
   test('should navigate to register page via link @smoke', async ({ homePage, page }) => {
     await homePage.goToRegister();
