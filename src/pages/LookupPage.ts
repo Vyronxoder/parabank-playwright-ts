@@ -1,13 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-/**
- * LookupPage — covers the ParaBank "Forgot Login Info" page.
- * Publicly accessible; used for credential recovery validation testing.
- */
 export class LookupPage extends BasePage {
-  // ─── Locators ──────────────────────────────────────────────────────────────
-
   readonly firstNameInput: Locator;
   readonly lastNameInput: Locator;
   readonly addressInput: Locator;
@@ -17,12 +11,12 @@ export class LookupPage extends BasePage {
   readonly ssnInput: Locator;
   readonly findLoginButton: Locator;
   readonly errorMessage: Locator;
+  readonly errorMessages: Locator;
   readonly pageHeader: Locator;
   readonly resultPanel: Locator;
 
   constructor(page: Page) {
     super(page);
-
     this.firstNameInput = page.locator('input[id="firstName"]');
     this.lastNameInput = page.locator('input[id="lastName"]');
     this.addressInput = page.locator('input[id="address.street"]');
@@ -31,12 +25,11 @@ export class LookupPage extends BasePage {
     this.zipCodeInput = page.locator('input[id="address.zipCode"]');
     this.ssnInput = page.locator('input[id="ssn"]');
     this.findLoginButton = page.locator('input[value="Find My Login Info"]');
-    this.errorMessage = page.locator('.error');
+    this.errorMessage = page.locator('.error').first();
+    this.errorMessages = page.locator('.error');
     this.pageHeader = page.locator('#rightPanel h1');
     this.resultPanel = page.locator('#rightPanel');
   }
-
-  // ─── Actions ───────────────────────────────────────────────────────────────
 
   async navigate(): Promise<void> {
     await this.navigateTo('/parabank/lookup.htm');
@@ -64,8 +57,6 @@ export class LookupPage extends BasePage {
     await this.clickElement(this.findLoginButton);
     await this.waitForNavigation();
   }
-
-  // ─── Getters ───────────────────────────────────────────────────────────────
 
   async getErrorMessage(): Promise<string> {
     return this.getElementText(this.errorMessage);
