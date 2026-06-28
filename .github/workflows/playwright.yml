@@ -1,0 +1,121 @@
+name: Playwright E2E Tests — ParaBank
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Runs daily at 06:00 UTC to catch environment drift
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to run tests on'
+        required: false
+        default: 'all'
+        type: choice
+        options: [all, chromium, firefox, webkit]
+      test_tag:
+        description: 'Test tag filter (smoke/regression)'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  test:
+    name: E2E Tests (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run Playwright tests
+        run: |
+          if [ -n "${{ github.event.inputs.test_tag }}" ]; then
+            npx playwright test --project=${{ matrix.browser }} --grep "@${{ github.event.inputs.test_tag }}"
+          else
+            npx playwright test --project=${{ matrix.browser }}
+          fi
+        env:
+          CI: true
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results (JUnit XML)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.browser }}
+          path: test-results/
+          retention-days: 14
+
+      - name: Upload failure traces and screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failure-artifacts-${{ matrix.browser }}
+          path: |
+            test-results/**/*.zip
+            test-results/**/*.png
+          retention-days: 7
+
+  smoke-gate:
+    name: Smoke Test Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: []
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke tests
+        run: npx playwright test --grep "@smoke" --project=chromium
+        env:
+          CI: true
+
+      - name: Upload smoke test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-report
+          path: playwright-report/
+          retention-days: 7

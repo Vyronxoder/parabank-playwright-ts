@@ -1,0 +1,28 @@
+{
+  "name": "parabank-playwright-ts",
+  "version": "1.0.0",
+  "description": "Production-grade Playwright + TypeScript E2E test automation framework for ParaBank",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:smoke": "npx playwright test --grep @smoke",
+    "test:regression": "npx playwright test --grep @regression",
+    "test:headed": "npx playwright test --headed",
+    "test:chromium": "npx playwright test --project=chromium",
+    "test:firefox": "npx playwright test --project=firefox",
+    "test:webkit": "npx playwright test --project=webkit",
+    "report": "npx playwright show-report",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf test-results playwright-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0"
+  },
+  "keywords": ["playwright", "typescript", "e2e", "automation", "qa", "testing", "parabank"],
+  "author": "Gaurav Chaubey",
+  "license": "MIT"
+}
